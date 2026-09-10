@@ -1,29 +1,40 @@
 """
-Sends each filtered candidate to Grok (xAI) for structured classification,
-via xAI's OpenAI-compatible Chat Completions endpoint.
+Sends each filtered candidate to Groq (fast open-model inference, e.g. Llama,
+GPT-OSS, Qwen) for structured classification, via Groq's OpenAI-compatible
+Chat Completions endpoint.
+
+Note: Groq != Grok. Groq (groq.com, console.groq.com) hosts open-weight
+models on their own inference hardware; Grok is xAI/Elon Musk's model.
+This file targets Groq's API.
+
+Free-tier rate limits (see https://console.groq.com/docs/rate-limits) are
+generous enough for this workload (well under 1,000 requests/day and
+200K tokens/day), but the 8,000 tokens/minute cap means we pace requests
+rather than fire them all at once.
 
 Any item that isn't actually about a real tech-transition problem (the
 keyword filter is intentionally loose) gets tagged is_relevant=false by
 the model and is dropped.
-
-Model naming at xAI changes frequently -- set GROK_MODEL as a repo/CI
-variable if the default below is no longer current. Check
-https://docs.x.ai/developers/models for the live list before assuming
-this default is still valid.
 """
 
 import json
 import os
 import sys
+import time
 
 import requests
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from config.taxonomy import CATEGORIES, SEVERITIES, SIZES, TECHS
 
-XAI_BASE_URL = "https://api.x.ai/v1/chat/completions"
-DEFAULT_MODEL = "grok-4-fast-non-reasoning"  # verify current cheapest tier at docs.x.ai before relying on this
-MODEL = os.environ.get("GROK_MODEL", DEFAULT_MODEL)
+GROQ_BASE_URL = "https://api.groq.com/openai/v1/chat/completions"
+DEFAULT_MODEL = "openai/gpt-oss-120b"  # strong quality/cost balance on Groq's free tier as of writing
+MODEL = os.environ.get("GROQ_MODEL", DEFAULT_MODEL)
+
+# Free tier: 8,000 tokens/minute. Each classification call runs ~500-700
+# tokens combined, so ~5 seconds between calls keeps us comfortably under
+# that even with some variance, without needing retry/backoff logic.
+SECONDS_BETWEEN_CALLS = 5
 
 SYSTEM_PROMPT = f"""You classify short articles/posts about enterprise technology \
 transitions (system migrations, new-tech adoption, integration of new and \
@@ -70,7 +81,7 @@ Text: {item['text'][:2000]}"""
 
     try:
         resp = requests.post(
-            XAI_BASE_URL,
+            GROQ_BASE_URL,
             headers={
                 "Authorization": f"Bearer {api_key}",
                 "Content-Type": "application/json",
@@ -78,6 +89,19 @@ Text: {item['text'][:2000]}"""
             json=payload,
             timeout=30,
         )
+        if resp.status_code == 429:
+            retry_after = int(resp.headers.get("retry-after", 10))
+            print(f"[warn] rate limited, sleeping {retry_after}s")
+            time.sleep(retry_after)
+            resp = requests.post(
+                GROQ_BASE_URL,
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json",
+                },
+                json=payload,
+                timeout=30,
+            )
         resp.raise_for_status()
         raw = resp.json()["choices"][0]["message"]["content"].strip()
         # Guard against accidental markdown fences
@@ -91,7 +115,9 @@ Text: {item['text'][:2000]}"""
 
 def classify_all(candidates, api_key):
     findings = []
-    for item in candidates:
+    for i, item in enumerate(candidates):
+        if i > 0:
+            time.sleep(SECONDS_BETWEEN_CALLS)
         result = classify_item(api_key, item)
         if not result or not result.get("is_relevant"):
             continue

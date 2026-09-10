@@ -1,10 +1,10 @@
 """
 Weekly job: fetch new items from all sources -> filter to problem-related
-candidates -> classify with Grok -> merge into data/findings.json
+candidates -> classify with Groq -> merge into data/findings.json
 -> copy to docs/findings.json for the GitHub Pages dashboard to fetch.
 
 Run manually with:  python scraper/run.py
-Run in CI with:      python scraper/run.py   (XAI_API_KEY set as env var)
+Run in CI with:      python scraper/run.py   (GROQ_API_KEY set as env var)
 """
 
 import json
@@ -25,8 +25,9 @@ SOURCES_PATH = os.path.join(ROOT, "config", "sources.yaml")
 DATA_PATH = os.path.join(ROOT, "data", "findings.json")
 DOCS_DATA_PATH = os.path.join(ROOT, "docs", "findings.json")
 
-# Safety cap: never classify more than this many candidates in one run,
-# so a bug or a keyword-filter miss can't produce a surprise API bill.
+# Safety cap: never classify more than this many candidates in one run.
+# At 5 seconds between calls (Groq free-tier pacing), 150 candidates takes
+# ~12.5 minutes -- comfortably within a GitHub Action's default timeout.
 MAX_CANDIDATES_PER_RUN = 150
 
 
@@ -38,9 +39,9 @@ def load_existing():
 
 
 def main():
-    api_key = os.environ.get("XAI_API_KEY")
+    api_key = os.environ.get("GROQ_API_KEY")
     if not api_key:
-        print("ERROR: XAI_API_KEY environment variable not set.")
+        print("ERROR: GROQ_API_KEY environment variable not set.")
         sys.exit(1)
 
     with open(SOURCES_PATH) as f:

@@ -13,8 +13,8 @@ focused on SAP and hyperscaler (AWS/Azure/GCP) environments.
    (SAP/AWS/Azure/GCP blogs, tech press RSS, Hacker News, Reddit).
 3. Items are filtered down to ones that actually mention a problem
    (`config/sources.yaml` → `problem_keywords`), to keep API costs low.
-4. Each candidate is sent to Grok (xAI) (`scraper/classify.py`) to be
-   categorized, tagged, and summarized in the model's own words — never
+4. Each candidate is sent to an LLM hosted on Groq (`scraper/classify.py`) to
+   be categorized, tagged, and summarized in the model's own words — never
    copying the source text.
 5. New findings are appended to `data/findings.json`, deduplicated by URL,
    and copied to `docs/findings.json`.
@@ -40,19 +40,23 @@ git push -u origin main
 (Public is recommended: GitHub Pages is free on public repos, and Actions
 minutes are unlimited. If you need it private, Pages requires GitHub Pro.)
 
-### 2. Add your xAI (Grok) API key as a secret
-The scraper needs an xAI API key to categorize findings.
+### 2. Add your Groq API key as a secret
+The scraper needs a Groq API key to categorize findings. Note: **Groq**
+(console.groq.com, fast inference on open-weight models) is a different
+company from **Grok** (xAI's model) — this project uses Groq.
 
-1. Get a key from https://console.x.ai (API Keys).
+1. Get a key from https://console.groq.com (API Keys).
 2. In your repo: **Settings → Secrets and variables → Actions → New repository secret**
-3. Name: `XAI_API_KEY`, value: your key.
-4. Optional: if xAI renames/retires the default model, set a repo variable
-   `GROK_MODEL` to override `DEFAULT_MODEL` in `scraper/classify.py` without
-   editing code. Check https://docs.x.ai/developers/models for current names.
+3. Name: `GROQ_API_KEY`, value: your key.
+4. Optional: if the default model is renamed/retired, set a repo variable
+   `GROQ_MODEL` to override `DEFAULT_MODEL` in `scraper/classify.py` without
+   editing code. Check https://console.groq.com/docs/models for current names.
 
-There's a hard cap of 150 classifications per run
-(`MAX_CANDIDATES_PER_RUN` in `scraper/run.py`) so a misconfigured source
-can't run up a large bill unexpectedly.
+Groq's free tier (1,000 requests/day, 200K tokens/day, 8,000 tokens/minute)
+comfortably covers this workload (~50–150 requests/week); `classify.py`
+paces requests 5 seconds apart to stay under the per-minute cap. There's
+also a hard cap of 150 classifications per run (`MAX_CANDIDATES_PER_RUN`
+in `scraper/run.py`) so a misconfigured source can't balloon usage.
 
 ### 3. Enable GitHub Pages
 **Settings → Pages → Build and deployment → Source: "Deploy from a branch"
@@ -70,7 +74,7 @@ then visit your Pages URL to see the dashboard update.
 
 ```bash
 pip install -r requirements.txt
-export XAI_API_KEY=xai-...
+export GROQ_API_KEY=gsk_...
 python scraper/run.py
 ```
 
@@ -105,7 +109,7 @@ tech-problem-tracker/
 ├── scraper/
 │   ├── fetch.py                          # RSS / HN / Reddit fetchers
 │   ├── extract.py                        # keyword filter + dedup
-│   ├── classify.py                       # Grok (xAI) categorization
+│   ├── classify.py                       # Groq-hosted LLM categorization
 │   └── run.py                            # orchestrates the whole run
 ├── data/findings.json                    # source of truth, committed by CI
 ├── docs/
