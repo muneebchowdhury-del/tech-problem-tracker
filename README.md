@@ -4,7 +4,7 @@ A weekly-refreshed dashboard of documented problems enterprises face when
 introducing new tech, migrating off legacy systems, or integrating the two —
 focused on SAP and hyperscaler (AWS/Azure/GCP) environments.
 
-**Live dashboard:** `https://<your-username>.github.io/<repo-name>/` (once Pages is enabled — see step 4 below)
+**Live dashboard:** https://muneebchowdhury-del.github.io/tech-problem-tracker/
 
 ## How it works
 
