@@ -26,7 +26,9 @@ jobs:
 
       - name: Run scraper
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+          # Optional: override the default model without editing code.
+          # GROK_MODEL: grok-4-fast-non-reasoning
         run: python scraper/run.py
 
       - name: Commit updated findings

@@ -1,23 +1,29 @@
 """
-Sends each filtered candidate to Claude Haiku for structured classification.
-Uses Haiku 4.5 (cheapest current model, $1/$5 per MTok) since this is a
-routine classification task, not open-ended reasoning.
+Sends each filtered candidate to Grok (xAI) for structured classification,
+via xAI's OpenAI-compatible Chat Completions endpoint.
 
 Any item that isn't actually about a real tech-transition problem (the
 keyword filter is intentionally loose) gets tagged is_relevant=false by
 the model and is dropped.
+
+Model naming at xAI changes frequently -- set GROK_MODEL as a repo/CI
+variable if the default below is no longer current. Check
+https://docs.x.ai/developers/models for the live list before assuming
+this default is still valid.
 """
 
 import json
 import os
 import sys
 
-import anthropic
+import requests
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from config.taxonomy import CATEGORIES, SEVERITIES, SIZES, TECHS
 
-MODEL = "claude-haiku-4-5-20251001"
+XAI_BASE_URL = "https://api.x.ai/v1/chat/completions"
+DEFAULT_MODEL = "grok-4-fast-non-reasoning"  # verify current cheapest tier at docs.x.ai before relying on this
+MODEL = os.environ.get("GROK_MODEL", DEFAULT_MODEL)
 
 SYSTEM_PROMPT = f"""You classify short articles/posts about enterprise technology \
 transitions (system migrations, new-tech adoption, integration of new and \
@@ -47,20 +53,33 @@ Never quote the source text directly — always paraphrase in your own words, \
 this is a strict legal requirement."""
 
 
-def classify_item(client, item):
+def classify_item(api_key, item):
     user_msg = f"""Title: {item['title']}
 Source: {item['source']}
 Suggested tech: {item['tech']}
 Text: {item['text'][:2000]}"""
 
+    payload = {
+        "model": MODEL,
+        "max_tokens": 500,
+        "messages": [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": user_msg},
+        ],
+    }
+
     try:
-        response = client.messages.create(
-            model=MODEL,
-            max_tokens=500,
-            system=SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": user_msg}],
+        resp = requests.post(
+            XAI_BASE_URL,
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
+            json=payload,
+            timeout=30,
         )
-        raw = response.content[0].text.strip()
+        resp.raise_for_status()
+        raw = resp.json()["choices"][0]["message"]["content"].strip()
         # Guard against accidental markdown fences
         raw = raw.replace("```json", "").replace("```", "").strip()
         result = json.loads(raw)
@@ -71,10 +90,9 @@ Text: {item['text'][:2000]}"""
 
 
 def classify_all(candidates, api_key):
-    client = anthropic.Anthropic(api_key=api_key)
     findings = []
     for item in candidates:
-        result = classify_item(client, item)
+        result = classify_item(api_key, item)
         if not result or not result.get("is_relevant"):
             continue
         findings.append({

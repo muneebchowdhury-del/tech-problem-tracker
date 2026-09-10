@@ -1,10 +1,10 @@
 """
 Weekly job: fetch new items from all sources -> filter to problem-related
-candidates -> classify with Claude Haiku -> merge into data/findings.json
+candidates -> classify with Grok -> merge into data/findings.json
 -> copy to docs/findings.json for the GitHub Pages dashboard to fetch.
 
 Run manually with:  python scraper/run.py
-Run in CI with:      python scraper/run.py   (ANTHROPIC_API_KEY set as env var)
+Run in CI with:      python scraper/run.py   (XAI_API_KEY set as env var)
 """
 
 import json
@@ -38,9 +38,9 @@ def load_existing():
 
 
 def main():
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
+    api_key = os.environ.get("XAI_API_KEY")
     if not api_key:
-        print("ERROR: ANTHROPIC_API_KEY environment variable not set.")
+        print("ERROR: XAI_API_KEY environment variable not set.")
         sys.exit(1)
 
     with open(SOURCES_PATH) as f:

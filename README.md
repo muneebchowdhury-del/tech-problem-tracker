@@ -13,7 +13,7 @@ focused on SAP and hyperscaler (AWS/Azure/GCP) environments.
    (SAP/AWS/Azure/GCP blogs, tech press RSS, Hacker News, Reddit).
 3. Items are filtered down to ones that actually mention a problem
    (`config/sources.yaml` → `problem_keywords`), to keep API costs low.
-4. Each candidate is sent to Claude Haiku 4.5 (`scraper/classify.py`) to be
+4. Each candidate is sent to Grok (xAI) (`scraper/classify.py`) to be
    categorized, tagged, and summarized in the model's own words — never
    copying the source text.
 5. New findings are appended to `data/findings.json`, deduplicated by URL,
@@ -40,15 +40,17 @@ git push -u origin main
 (Public is recommended: GitHub Pages is free on public repos, and Actions
 minutes are unlimited. If you need it private, Pages requires GitHub Pro.)
 
-### 2. Add your Anthropic API key as a secret
-The scraper needs an Anthropic API key to categorize findings.
+### 2. Add your xAI (Grok) API key as a secret
+The scraper needs an xAI API key to categorize findings.
 
-1. Get a key from https://platform.claude.com (Console → API Keys).
+1. Get a key from https://console.x.ai (API Keys).
 2. In your repo: **Settings → Secrets and variables → Actions → New repository secret**
-3. Name: `ANTHROPIC_API_KEY`, value: your key.
+3. Name: `XAI_API_KEY`, value: your key.
+4. Optional: if xAI renames/retires the default model, set a repo variable
+   `GROK_MODEL` to override `DEFAULT_MODEL` in `scraper/classify.py` without
+   editing code. Check https://docs.x.ai/developers/models for current names.
 
-Cost note: classifying ~50 new items/week with Haiku 4.5 costs roughly
-$0.05–$0.20/week. There's a hard cap of 150 classifications per run
+There's a hard cap of 150 classifications per run
 (`MAX_CANDIDATES_PER_RUN` in `scraper/run.py`) so a misconfigured source
 can't run up a large bill unexpectedly.
 
@@ -68,7 +70,7 @@ then visit your Pages URL to see the dashboard update.
 
 ```bash
 pip install -r requirements.txt
-export ANTHROPIC_API_KEY=sk-ant-...
+export XAI_API_KEY=xai-...
 python scraper/run.py
 ```
 
@@ -103,7 +105,7 @@ tech-problem-tracker/
 ├── scraper/
 │   ├── fetch.py                          # RSS / HN / Reddit fetchers
 │   ├── extract.py                        # keyword filter + dedup
-│   ├── classify.py                       # Claude Haiku categorization
+│   ├── classify.py                       # Grok (xAI) categorization
 │   └── run.py                            # orchestrates the whole run
 ├── data/findings.json                    # source of truth, committed by CI
 ├── docs/
