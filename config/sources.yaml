@@ -1,0 +1,101 @@
+# Each source the scraper checks weekly.
+# type: "rss" | "hn_algolia" | "reddit"
+#
+# Add new sources here — no code changes needed for rss/reddit/hn_algolia types.
+
+sources:
+  # --- SAP ---
+  - name: "SAP Community Blog"
+    type: rss
+    url: "https://community.sap.com/t5/s/tools/rss/blog?board.id=all"
+    tech: "SAP"
+
+  - name: "SAP News Center"
+    type: rss
+    url: "https://news.sap.com/feed/"
+    tech: "SAP"
+
+  # --- Hyperscalers ---
+  - name: "AWS Migration & Modernization Blog"
+    type: rss
+    url: "https://aws.amazon.com/blogs/migration-and-modernization/feed/"
+    tech: "AWS"
+
+  - name: "Azure Migration Blog"
+    type: rss
+    url: "https://azure.microsoft.com/en-us/blog/topics/migration/feed/"
+    tech: "Azure"
+
+  - name: "Google Cloud Blog - Infrastructure"
+    type: rss
+    url: "https://cloud.google.com/blog/products/infrastructure-modernization/rss"
+    tech: "GCP"
+
+  # --- Tech press ---
+  - name: "The Register - Enterprise"
+    type: rss
+    url: "https://www.theregister.com/enterprise/headlines.atom"
+    tech: "General"
+
+  - name: "InfoWorld"
+    type: rss
+    url: "https://www.infoworld.com/feed/"
+    tech: "General"
+
+  - name: "CIO.com"
+    type: rss
+    url: "https://www.cio.com/feed/"
+    tech: "General"
+
+  # --- Communities / forums ---
+  - name: "Hacker News"
+    type: hn_algolia
+    query: "SAP migration OR cloud migration OR legacy system integration"
+    tech: "General"
+
+  - name: "Reddit r/sysadmin"
+    type: reddit
+    subreddit: "sysadmin"
+    tech: "General"
+
+  - name: "Reddit r/ERP"
+    type: reddit
+    subreddit: "ERP"
+    tech: "SAP"
+
+  - name: "Reddit r/aws"
+    type: reddit
+    subreddit: "aws"
+    tech: "AWS"
+
+  - name: "Reddit r/AZURE"
+    type: reddit
+    subreddit: "AZURE"
+    tech: "Azure"
+
+# Keywords used to filter raw articles/posts down to candidates worth
+# sending to the classifier. An item needs at least one PROBLEM keyword
+# to be considered — this keeps API costs down by not classifying
+# irrelevant posts (release announcements, marketing, etc).
+problem_keywords:
+  - "fail"
+  - "failure"
+  - "delay"
+  - "over budget"
+  - "cost overrun"
+  - "downtime"
+  - "outage"
+  - "data loss"
+  - "migration issue"
+  - "integration issue"
+  - "rollback"
+  - "lessons learned"
+  - "went wrong"
+  - "challenge"
+  - "risk"
+  - "technical debt"
+  - "legacy"
+  - "cutover"
+  - "vendor lock-in"
+  - "compliance gap"
+  - "security incident"

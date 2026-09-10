@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Migration &amp; Integration Problem Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#12161c;
+    --panel:#1a2028;
+    --panel-alt:#212a34;
+    --border:#2b3542;
+    --text:#e7e5dd;
+    --muted:#8b96a3;
+    --accent:#4fb0a5;
+    --accent-soft:#2c4744;
+    --crit:#d65c3e;
+    --high:#d6a23e;
+    --med:#7c93b8;
+    --low:#5f7a63;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'IBM Plex Sans',sans-serif;
+    line-height:1.5;
+  }
+  .mono{font-family:'IBM Plex Mono',monospace;}
+
+  header{
+    border-bottom:1px solid var(--border);
+    padding:28px 32px 22px;
+    background:linear-gradient(180deg, var(--panel) 0%, var(--bg) 100%);
+  }
+  header h1{
+    margin:0 0 6px;
+    font-size:1.6rem;
+    font-weight:700;
+    letter-spacing:-0.01em;
+  }
+  header p.sub{
+    margin:0;
+    color:var(--muted);
+    font-size:0.92rem;
+    max-width:720px;
+  }
+  .stat-strip{
+    display:flex;
+    gap:0;
+    margin-top:20px;
+    border:1px solid var(--border);
+    border-radius:6px;
+    overflow:hidden;
+    width:fit-content;
+  }
+  .stat{
+    padding:10px 18px;
+    border-right:1px solid var(--border);
+    font-family:'IBM Plex Mono',monospace;
+  }
+  .stat:last-child{border-right:none;}
+  .stat .n{font-size:1.15rem;font-weight:600;}
+  .stat .l{font-size:0.7rem;color:var(--muted);margin-top:2px;}
+  .stat.crit .n{color:var(--crit);}
+  .stat.high .n{color:var(--high);}
+
+  .layout{
+    display:grid;
+    grid-template-columns:250px 1fr;
+    gap:0;
+    align-items:start;
+  }
+  aside{
+    padding:24px 20px;
+    border-right:1px solid var(--border);
+    position:sticky;
+    top:0;
+    max-height:100vh;
+    overflow-y:auto;
+  }
+  .filter-group{margin-bottom:22px;}
+  .filter-group h3{
+    font-size:0.72rem;
+    color:var(--muted);
+    margin:0 0 10px;
+    font-weight:600;
+    letter-spacing:0.02em;
+  }
+  .chip{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:6px 8px;
+    border-radius:5px;
+    cursor:pointer;
+    font-size:0.85rem;
+    margin-bottom:2px;
+    color:var(--text);
+    user-select:none;
+  }
+  .chip:hover{background:var(--panel-alt);}
+  .chip input{accent-color:var(--accent);}
+  .chip .count{margin-left:auto;color:var(--muted);font-size:0.75rem;font-family:'IBM Plex Mono',monospace;}
+  .reset-btn{
+    background:none;
+    border:1px solid var(--border);
+    color:var(--muted);
+    padding:6px 10px;
+    border-radius:5px;
+    font-size:0.78rem;
+    cursor:pointer;
+    width:100%;
+    margin-top:4px;
+  }
+  .reset-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+  main{padding:24px 28px 60px;}
+  .results-meta{
+    color:var(--muted);
+    font-size:0.82rem;
+    margin-bottom:16px;
+    font-family:'IBM Plex Mono',monospace;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(340px,1fr));
+    gap:16px;
+  }
+  .card{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:18px 18px 16px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .card-top{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .severity{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-size:0.72rem;
+    font-family:'IBM Plex Mono',monospace;
+    white-space:nowrap;
+    padding-top:2px;
+  }
+  .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .dot.critical{background:var(--crit);}
+  .dot.high{background:var(--high);}
+  .dot.medium{background:var(--med);}
+
+  .card h2{
+    font-size:1rem;
+    margin:0;
+    font-weight:600;
+    line-height:1.35;
+  }
+  .card p.desc{
+    margin:0;
+    color:var(--muted);
+    font-size:0.87rem;
+  }
+  .tags{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-top:2px;
+  }
+  .tag{
+    font-size:0.68rem;
+    font-family:'IBM Plex Mono',monospace;
+    padding:3px 7px;
+    border-radius:4px;
+    background:var(--panel-alt);
+    color:var(--muted);
+    border:1px solid var(--border);
+  }
+  .tag.category{color:var(--accent);border-color:var(--accent-soft);}
+
+  .fix{
+    background:var(--panel-alt);
+    border-left:2px solid var(--accent);
+    padding:9px 11px;
+    border-radius:0 5px 5px 0;
+    font-size:0.83rem;
+    margin-top:4px;
+  }
+  .fix .label{
+    display:block;
+    font-size:0.68rem;
+    font-family:'IBM Plex Mono',monospace;
+    color:var(--accent);
+    margin-bottom:3px;
+  }
+  .source-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:6px;
+    padding-top:10px;
+    border-top:1px solid var(--border);
+  }
+  .source-row a{
+    color:var(--muted);
+    font-size:0.78rem;
+    text-decoration:none;
+  }
+  .source-row a:hover{color:var(--accent);text-decoration:underline;}
+  .commonality{
+    font-size:0.72rem;
+    color:var(--muted);
+    font-family:'IBM Plex Mono',monospace;
+  }
+
+  .about{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:16px 18px;
+    margin-bottom:20px;
+    font-size:0.85rem;
+    color:var(--muted);
+  }
+  .about strong{color:var(--text);}
+
+  .empty{
+    color:var(--muted);
+    padding:40px 0;
+    text-align:center;
+    font-size:0.9rem;
+  }
+
+  @media (max-width:900px){
+    .layout{grid-template-columns:1fr;}
+    aside{position:static;max-height:none;border-right:none;border-bottom:1px solid var(--border);}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Migration &amp; Integration Problem Tracker</h1>
+  <p class="sub">Documented problems enterprises face across the tech lifecycle — introducing new systems, migrating off old ones, and integrating the two — drawn from SAP, AWS, Azure, GCP and legacy-modernization sources. Refreshed weekly.</p>
+  <div class="stat-strip" id="statStrip"></div>
+  <p class="sub" id="lastUpdated" style="margin-top:10px;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;"></p>
+</header>
+
+<div class="layout">
+  <aside>
+    <div class="filter-group">
+      <h3>Category</h3>
+      <div id="categoryFilters"></div>
+    </div>
+    <div class="filter-group">
+      <h3>Technology</h3>
+      <div id="techFilters"></div>
+    </div>
+    <div class="filter-group">
+      <h3>Severity</h3>
+      <div id="severityFilters"></div>
+    </div>
+    <div class="filter-group">
+      <h3>Organization size</h3>
+      <div id="sizeFilters"></div>
+    </div>
+    <button class="reset-btn" onclick="resetFilters()">Clear all filters</button>
+  </aside>
+
+  <main>
+    <div class="about">
+      <strong>About this data.</strong> Findings are gathered weekly from SAP, AWS, Azure, GCP, tech press, and community sources, then categorized by Claude. Each entry is paraphrased and linked back to its original source — no reproduced text.
+    </div>
+    <div class="results-meta" id="resultsMeta"></div>
+    <div class="grid" id="grid">
+      <div class="empty">Loading findings…</div>
+    </div>
+  </main>
+</div>
+
+<script>
+let findings = [];
+const state = { category:new Set(), tech:new Set(), severity:new Set(), size:new Set() };
+
+function unique(key){ return [...new Set(findings.map(f=>f[key]))].sort(); }
+
+function buildFilterGroup(containerId, key, labelFn){
+  const container = document.getElementById(containerId);
+  const values = unique(key);
+  container.innerHTML = values.map(v=>{
+    const count = findings.filter(f=>f[key]===v).length;
+    const id = containerId+'-'+v.replace(/[^a-z0-9]/gi,'');
+    return `<label class="chip" for="${id}">
+      <input type="checkbox" id="${id}" data-key="${key}" value="${v}">
+      <span>${labelFn?labelFn(v):v}</span>
+      <span class="count">${count}</span>
+    </label>`;
+  }).join('');
+  container.querySelectorAll('input').forEach(inp=>{
+    inp.addEventListener('change', e=>{
+      const k = e.target.dataset.key, val = e.target.value;
+      if(e.target.checked) state[k].add(val); else state[k].delete(val);
+      render();
+    });
+  });
+}
+
+function severityLabel(v){
+  return v.charAt(0).toUpperCase()+v.slice(1);
+}
+
+function resetFilters(){
+  Object.keys(state).forEach(k=>state[k].clear());
+  document.querySelectorAll('aside input[type=checkbox]').forEach(i=>i.checked=false);
+  render();
+}
+
+function matches(f){
+  return (state.category.size===0 || state.category.has(f.category)) &&
+         (state.tech.size===0 || state.tech.has(f.tech)) &&
+         (state.severity.size===0 || state.severity.has(f.severity)) &&
+         (state.size.size===0 || state.size.has(f.size));
+}
+
+function renderStats(){
+  const total = findings.length;
+  const crit = findings.filter(f=>f.severity==='critical').length;
+  const high = findings.filter(f=>f.severity==='high').length;
+  const cats = unique('category').length;
+  document.getElementById('statStrip').innerHTML = `
+    <div class="stat"><div class="n">${total}</div><div class="l">findings</div></div>
+    <div class="stat crit"><div class="n">${crit}</div><div class="l">critical</div></div>
+    <div class="stat high"><div class="n">${high}</div><div class="l">high</div></div>
+    <div class="stat"><div class="n">${cats}</div><div class="l">categories</div></div>
+  `;
+}
+
+function render(){
+  const visible = findings.filter(matches);
+  document.getElementById('resultsMeta').textContent = `Showing ${visible.length} of ${findings.length} findings`;
+  const grid = document.getElementById('grid');
+  if(visible.length===0){
+    grid.innerHTML = '<div class="empty">No findings match this filter combination.</div>';
+    return;
+  }
+  grid.innerHTML = visible.map(f=>`
+    <div class="card">
+      <div class="card-top">
+        <h2>${f.title}</h2>
+        <div class="severity"><span class="dot ${f.severity}"></span>${severityLabel(f.severity)}</div>
+      </div>
+      <p class="desc">${f.desc}</p>
+      <div class="tags">
+        <span class="tag category">${f.category}</span>
+        <span class="tag">${f.tech}</span>
+        <span class="tag">${f.size}</span>
+      </div>
+      <div class="fix">
+        <span class="label">What worked elsewhere</span>
+        ${f.fix}
+      </div>
+      <div class="source-row">
+        <a href="${f.url}" target="_blank" rel="noopener">${f.source} ↗</a>
+        <span class="commonality">${f.commonality}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function init(){
+  try{
+    const res = await fetch('findings.json?_=' + Date.now());
+    const data = await res.json();
+    findings = data.findings || [];
+    if(data.last_updated){
+      const d = new Date(data.last_updated);
+      document.getElementById('lastUpdated').textContent = 'Last updated ' + d.toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'});
+    }
+  }catch(e){
+    document.getElementById('grid').innerHTML = '<div class="empty">Could not load findings.json. If you just deployed this, make sure the weekly-scrape workflow has run at least once, or findings.json is committed to /docs.</div>';
+    console.error(e);
+    return;
+  }
+  buildFilterGroup('categoryFilters','category');
+  buildFilterGroup('techFilters','tech');
+  buildFilterGroup('severityFilters','severity', severityLabel);
+  buildFilterGroup('sizeFilters','size');
+  renderStats();
+  render();
+}
+
+init();
+</script>
+
+</body>
+</html>
