@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-16T15:19:49.990028+00:00",
+  "last_updated": "2026-11-23T17:47:20.310657+00:00",
   "findings": [
     {
       "title": "75-80% of S/4HANA projects derailed by change-management failure",
@@ -2613,6 +2613,149 @@
       "source": "CIO.com",
       "url": "https://www.cio.com/article/4246026/as-employees-build-ai-agents-cios-manage-the-lifecycle.html",
       "hash": "8a89abfec1d2f470"
+    },
+    {
+      "title": "AI delays Postgres 19 release",
+      "desc": "The integration of AI\u2011generated contributions caused quality concerns, prompting the PostgreSQL team to postpone the September 2024 release to November and roll back several major features.",
+      "category": "Budget & Timeline",
+      "tech": "General",
+      "size": "Unspecified",
+      "severity": "high",
+      "commonality": "Emerging pattern",
+      "fix": "Introduce dedicated AI code review and testing gates, and adjust release cadences to accommodate AI\u2011driven development.",
+      "source": "InfoWorld",
+      "url": "https://www.infoworld.com/article/4251532/how-ai-impacted-the-release-of-postgres-19.html",
+      "hash": "e1f6d05303c78649"
+    },
+    {
+      "title": "Agentic AI project inflates cost and integration effort",
+      "desc": "A regional distributor tried to build a sales system with AI agents, but the need for extensive data cleaning, API governance, security checks, and operational guardrails drove costs up twentyfold with little ROI.",
+      "category": "Integration & API Compatibility",
+      "tech": "General",
+      "size": "Enterprise",
+      "severity": "high",
+      "commonality": "Emerging pattern",
+      "fix": "Start with a small, well\u2011defined pilot, secure clean data and stable APIs first, and rigorously assess integration and security overhead before scaling AI agents.",
+      "source": "InfoWorld",
+      "url": "https://www.infoworld.com/article/4249734/agentic-ai-repeats-same-old-enterprise-adoption-cycle.html",
+      "hash": "7113527d27d176de"
+    },
+    {
+      "title": "Need sandbox for autonomous AI coding agents",
+      "desc": "Enterprises deploying self\u2011directed AI coding tools risk unintended changes and credential leaks, so they require isolated runtimes that enforce strict access controls.",
+      "category": "Security & Compliance",
+      "tech": "General",
+      "size": "Unspecified",
+      "severity": "high",
+      "commonality": "Emerging pattern",
+      "fix": "Adopt sandbox platforms like Eclipse Enclave to run agents in isolated containers with granular permission settings.",
+      "source": "InfoWorld",
+      "url": "https://www.infoworld.com/article/4251051/ai-coding-agents-need-a-safe-place-to-work-eclipse-is-building-the-sandbox-to-give-it-to-them.html",
+      "hash": "b1ac1426be74366f"
+    },
+    {
+      "title": "Funding mismatch stalls SAP clean\u2011core program",
+      "desc": "Leaders fast\u2011tracked AI agent pilots as operating expenses, but the SAP clean\u2011core upgrade was treated as a capital project with a three\u2011year payback, causing it to be delayed despite its importance.",
+      "category": "Budget & Timeline",
+      "tech": "SAP",
+      "size": "Enterprise",
+      "severity": "high",
+      "commonality": "Common",
+      "fix": "Synchronize budgeting and approval processes for platform upgrades with innovation projects, using unified criteria and early cross\u2011team involvement.",
+      "source": "CIO.com",
+      "url": "https://www.cio.com/article/4251456/claude-copilot-and-agentforce-are-ready-are-your-sap-and-servicenow-platforms-ready.html",
+      "hash": "deadd1a8602dc83e"
+    },
+    {
+      "title": "AI\u2011generated code breaks handoff due to undocumented dependencies",
+      "desc": "Small AI\u2011driven edits to a shared component passed internal tests but failed in production because no one documented which services relied on it, exposing a weak Development\u2011QA handoff.",
+      "category": "Change Management & Adoption",
+      "tech": "General",
+      "size": "Enterprise",
+      "severity": "high",
+      "commonality": "Documented incident",
+      "fix": "Establish a formal handoff contract that lists affected components, dependent services, and required evidence before any change is released.",
+      "source": "CIO.com",
+      "url": "https://www.cio.com/article/4251514/what-developers-and-qa-need-from-each-other-when-ai-writes-the-code.html",
+      "hash": "7345410e8410f60d"
+    },
+    {
+      "title": "Reassessing build\u2011versus\u2011buy with AI\u2011driven development",
+      "desc": "CIOs must rethink the traditional choice between building custom software and buying SaaS as AI tools dramatically lower development time and cost, while still requiring ongoing ownership and support.",
+      "category": "Budget & Timeline",
+      "tech": "General",
+      "size": "Enterprise",
+      "severity": "high",
+      "commonality": "Emerging pattern",
+      "fix": "Run pilot projects using AI\u2011generated code, compare total cost of ownership against SaaS, and embed governance to decide when to build versus buy.",
+      "source": "CIO.com",
+      "url": "https://www.cio.com/article/4250943/ai-is-changing-the-build-versus-buy-equation-are-cios-ready.html",
+      "hash": "1b3178e099300619"
+    },
+    {
+      "title": "Prepare for post\u2011quantum encryption to avoid future data breaches",
+      "desc": "Enterprises must inventory all cryptographic usage, prioritize long\u2011term sensitive data, and plan a phased migration to quantum\u2011resistant algorithms before quantum computers can decrypt harvested information.",
+      "category": "Security & Compliance",
+      "tech": "General",
+      "size": "Enterprise",
+      "severity": "high",
+      "commonality": "Widespread pattern",
+      "fix": "Conduct a comprehensive cryptography audit, select post\u2011quantum standards, and execute a staged rollout with vendor coordination.",
+      "source": "CIO.com",
+      "url": "https://www.cio.com/article/4250932/why-quantum-readiness-is-the-next-test-of-global-competitiveness.html",
+      "hash": "696fa9e18701b0a2"
+    },
+    {
+      "title": "Ensuring AI ROI and Controlling Unexpected Costs",
+      "desc": "Enterprises find AI spend unpredictable and struggle to prove ROI, prompting the need for upfront cost governance and hypothesis\u2011driven pilots with spending caps.",
+      "category": "Budget & Timeline",
+      "tech": "General",
+      "size": "Enterprise",
+      "severity": "high",
+      "commonality": "Emerging pattern",
+      "fix": "Implement hypothesis\u2011based experiments with defined budgets and token\u2011capping to enforce cost discipline.",
+      "source": "CIO.com",
+      "url": "https://www.cio.com/article/4249237/enterprise-ai-pulse-check-roi-risk-and-the-road-to-scale.html",
+      "hash": "1f2fefd824c851d2"
+    },
+    {
+      "title": "Botched telecom update forces FAA flight ground stop",
+      "desc": "A rushed telecom equipment upgrade without proper backup or testing caused a four\u2011hour nationwide flight halt, highlighting the need for careful change scheduling and risk assessment.",
+      "category": "Change Management & Adoption",
+      "tech": "General",
+      "size": "Government",
+      "severity": "high",
+      "commonality": "Widespread pattern",
+      "fix": "Plan and test updates during low\u2011demand windows, maintain fallback systems, and conduct thorough risk analysis before making changes.",
+      "source": "CIO.com",
+      "url": "https://www.cio.com/article/4250479/faa-ground-stop-offers-it-leaders-stark-modernization-lessons.html",
+      "hash": "278eff471ef5544f"
+    },
+    {
+      "title": "Controlling exploding AI compute costs",
+      "desc": "IT leaders are facing rapidly rising AI infrastructure expenses driven by token\u2011based pricing and high usage, creating budgeting and forecasting challenges.",
+      "category": "Budget & Timeline",
+      "tech": "General",
+      "size": "Enterprise",
+      "severity": "high",
+      "commonality": "Widespread pattern",
+      "fix": "Deploy granular spend dashboards, user quotas, and group budgeting tools\u2014often via cloud partners\u2014to gain visibility and enforce cost limits on AI workloads.",
+      "source": "CIO.com",
+      "url": "https://www.cio.com/article/4243812/keep-skyrocketing-ai-costs-in-check.html",
+      "hash": "e9adaf9d039334bb"
+    },
+    {
+      "title": "AI recovery challenges disrupt disaster plans",
+      "desc": "Enterprises lack tested, clean backups for AI models and supporting data, risking inaccurate outputs and re\u2011introducing threats when restoring after incidents.",
+      "category": "Business Continuity & Downtime",
+      "tech": "General",
+      "size": "Enterprise",
+      "severity": "high",
+      "commonality": "Widespread pattern",
+      "fix": "Establish routine, realistic AI recovery drills and clearly assign responsibility across business, IT, and security teams.",
+      "source": "CIO.com",
+      "url": "https://www.cio.com/article/4250414/rewrite-the-rules-of-enterprise-recovery.html",
+      "hash": "26b1de47da61aee6"
     }
   ]
 }
