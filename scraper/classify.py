@@ -113,25 +113,56 @@ Text: {item['text'][:2000]}"""
         return None
 
 
+COMMONALITIES = ["Widespread pattern", "Common", "Documented incident", "Emerging pattern"]
+
+
+def _text(value, max_len):
+    """Plain, length-capped text. The scraped post can steer the model
+    (prompt injection), so model output is treated as untrusted."""
+    text = " ".join(str(value or "").split())
+    return text[:max_len]
+
+
+def _choice(value, allowed, default):
+    return value if isinstance(value, str) and value in allowed else default
+
+
+def _safe_url(url):
+    url = str(url or "").strip()
+    return url if url.lower().startswith(("https://", "http://")) else None
+
+
+def sanitize_finding(result, item):
+    """Turn a model answer into a finding with only expected values, or None."""
+    if not isinstance(result, dict) or result.get("is_relevant") is not True:
+        return None
+    url = _safe_url(item.get("url"))
+    title = _text(result.get("title"), 120)
+    if not url or not title:
+        return None
+    categories = result.get("category")
+    category = categories[0] if isinstance(categories, list) and categories else categories
+    return {
+        "title": title,
+        "desc": _text(result.get("desc"), 500),
+        "category": _choice(category, CATEGORIES, "Governance & Scope"),
+        "tech": _choice(result.get("tech"), TECHS, _choice(item.get("tech"), TECHS, "General")),
+        "size": _choice(result.get("size"), SIZES, "Unspecified"),
+        "severity": _choice(result.get("severity"), SEVERITIES, "medium"),
+        "commonality": _choice(result.get("commonality"), COMMONALITIES, "Documented incident"),
+        "fix": _text(result.get("fix"), 300),
+        "source": _text(item.get("source"), 80),
+        "url": url,
+        "hash": item["_hash"],
+    }
+
+
 def classify_all(candidates, api_key):
     findings = []
     for i, item in enumerate(candidates):
         if i > 0:
             time.sleep(SECONDS_BETWEEN_CALLS)
-        result = classify_item(api_key, item)
-        if not result or not result.get("is_relevant"):
-            continue
-        findings.append({
-            "title": result["title"],
-            "desc": result["desc"],
-            "category": result["category"][0] if result.get("category") else "Governance & Scope",
-            "tech": result.get("tech", item["tech"]),
-            "size": result.get("size", "Unspecified"),
-            "severity": result.get("severity", "medium"),
-            "commonality": result.get("commonality", "Documented incident"),
-            "fix": result.get("fix", ""),
-            "source": item["source"],
-            "url": item["url"],
-            "hash": item["_hash"],
-        })
+        finding = sanitize_finding(classify_item(api_key, item), item)
+        if finding:
+            findings.append(finding)
     return findings

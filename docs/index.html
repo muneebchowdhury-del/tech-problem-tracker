@@ -291,6 +291,19 @@
 let findings = [];
 const state = { category:new Set(), tech:new Set(), severity:new Set(), size:new Set() };
 
+// findings.json is built from Reddit/HN/RSS posts rewritten by an LLM, so every
+// value is untrusted: escape it before it goes into HTML, and only allow
+// http(s) links (blocks javascript: URLs).
+function esc(x){
+  return String(x ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function safeUrl(x){
+  try{
+    const u = new URL(String(x));
+    return (u.protocol === 'https:' || u.protocol === 'http:') ? u.href : '#';
+  }catch{ return '#'; }
+}
+
 function unique(key){ return [...new Set(findings.map(f=>f[key]))].sort(); }
 
 function buildFilterGroup(containerId, key, labelFn){
@@ -298,10 +311,10 @@ function buildFilterGroup(containerId, key, labelFn){
   const values = unique(key);
   container.innerHTML = values.map(v=>{
     const count = findings.filter(f=>f[key]===v).length;
-    const id = containerId+'-'+v.replace(/[^a-z0-9]/gi,'');
+    const id = containerId+'-'+String(v).replace(/[^a-z0-9]/gi,'');
     return `<label class="chip" for="${id}">
-      <input type="checkbox" id="${id}" data-key="${key}" value="${v}">
-      <span>${labelFn?labelFn(v):v}</span>
+      <input type="checkbox" id="${id}" data-key="${esc(key)}" value="${esc(v)}">
+      <span>${esc(labelFn?labelFn(v):v)}</span>
       <span class="count">${count}</span>
     </label>`;
   }).join('');
@@ -355,22 +368,22 @@ function render(){
   grid.innerHTML = visible.map(f=>`
     <div class="card">
       <div class="card-top">
-        <h2>${f.title}</h2>
-        <div class="severity"><span class="dot ${f.severity}"></span>${severityLabel(f.severity)}</div>
+        <h2>${esc(f.title)}</h2>
+        <div class="severity"><span class="dot ${esc(f.severity)}"></span>${esc(severityLabel(String(f.severity ?? '')))}</div>
       </div>
-      <p class="desc">${f.desc}</p>
+      <p class="desc">${esc(f.desc)}</p>
       <div class="tags">
-        <span class="tag category">${f.category}</span>
-        <span class="tag">${f.tech}</span>
-        <span class="tag">${f.size}</span>
+        <span class="tag category">${esc(f.category)}</span>
+        <span class="tag">${esc(f.tech)}</span>
+        <span class="tag">${esc(f.size)}</span>
       </div>
       <div class="fix">
         <span class="label">What worked elsewhere</span>
-        ${f.fix}
+        ${esc(f.fix)}
       </div>
       <div class="source-row">
-        <a href="${f.url}" target="_blank" rel="noopener">${f.source} ↗</a>
-        <span class="commonality">${f.commonality}</span>
+        <a href="${esc(safeUrl(f.url))}" target="_blank" rel="noopener noreferrer">${esc(f.source)} ↗</a>
+        <span class="commonality">${esc(f.commonality)}</span>
       </div>
     </div>
   `).join('');
